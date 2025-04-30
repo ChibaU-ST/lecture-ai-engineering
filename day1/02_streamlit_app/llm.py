@@ -7,6 +7,62 @@ import time
 from config import MODEL_NAME
 from huggingface_hub import login
 
+# バッチキューサポート
+from threading import Lock
+
+# バッチキューの初期化
+_batch_queue = []
+_queue_lock = Lock()
+
+def enqueue_question(user_question: str):
+    """ユーザーの質問をキューに追加。"""
+    with _queue_lock:
+        _batch_queue.append(user_question)
+
+def process_batch(pipe, max_new_tokens=512, do_sample=True, temperature=0.7, top_p=0.9):
+    """
+    キューに溜まった質問をまとめて処理し、応答のリストを返します。
+    処理後、キューはクリア。
+    """
+    with _queue_lock:
+        questions = list(_batch_queue)
+        _batch_queue.clear()
+
+    if not questions:
+        return []
+
+    # パイプラインに渡す入力メッセージを生成
+    batch_inputs = [
+        [{"role": "user", "content": q}]
+        for q in questions
+    ]
+
+    outputs = pipe(
+        batch_inputs,
+        max_new_tokens=max_new_tokens,
+        do_sample=do_sample,
+        temperature=temperature,
+        top_p=top_p,
+    )
+
+    responses = []
+    for output, question in zip(outputs, questions):
+        text = ""
+        if isinstance(output, list) and output and isinstance(output[0], dict):
+            gen = output[0].get("generated_text", "")
+            # 質問部分を除去する処理（モデル出力の形式による調整が必要）
+            idx = gen.find(question)
+            text = gen[idx + len(question):].strip() if idx >= 0 else gen.strip()
+        elif isinstance(output, dict):
+            gen = output.get("generated_text", "")
+            idx = gen.find(question)
+            text = gen[idx + len(question):].strip() if idx >= 0 else gen.strip()
+        else:
+            text = str(output)
+        responses.append(text)
+
+    return responses
+
 # モデルをキャッシュして再利用
 @st.cache_resource
 def load_model():
@@ -85,3 +141,14 @@ def generate_response(pipe, user_question):
         import traceback
         traceback.print_exc()
         return f"エラーが発生しました: {str(e)}", 0
+
+# バッチキューを使う補助関数
+def enqueue_and_process(pipe, user_question: str, flush: bool = False):
+    """
+    質問をキューに追加し、flush=Trueの場合はバッチ処理して応答。
+    flush=Falseの場合はNoneを返します。
+    """
+    enqueue_question(user_question)
+    if flush:
+        return process_batch(pipe)
+    return None

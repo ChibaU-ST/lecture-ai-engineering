@@ -1,5 +1,8 @@
 # app.py
 import streamlit as st
+# --- アプリケーション設定 ---
+st.set_page_config(page_title="Gemma Chatbot", layout="wide")
+
 import ui                   # UIモジュール
 import llm                  # LLMモジュール
 import database             # データベースモジュール
@@ -9,9 +12,6 @@ import torch
 from transformers import pipeline
 from config import MODEL_NAME
 from huggingface_hub import HfFolder
-
-# --- アプリケーション設定 ---
-st.set_page_config(page_title="Gemma Chatbot", layout="wide")
 
 # --- 初期化処理 ---
 # NLTKデータのダウンロード（初回起動時など）
@@ -46,7 +46,7 @@ def load_model():
 pipe = llm.load_model()
 
 # --- Streamlit アプリケーション ---
-st.title("🤖 Gemma 2 Chatbot with Feedback")
+st.title("🤖 Gemma 3-1B Chatbot with Feedback")
 st.write("Gemmaモデルを使用したチャットボットです。回答に対してフィードバックを行えます。")
 st.markdown("---")
 
@@ -78,4 +78,4 @@ elif st.session_state.page == "サンプルデータ管理":
 
 # --- フッターなど（任意） ---
 st.sidebar.markdown("---")
-st.sidebar.info("開発者: Tagawa (Original work by 松尾研究室)")
+st.sidebar.info("開発者: Tagawa \n (Original work by 松尾研究室)")

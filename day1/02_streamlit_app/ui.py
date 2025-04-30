@@ -2,6 +2,36 @@
 import streamlit as st
 import pandas as pd
 import time
+
+# Tealテーマ用カスタムCSS
+st.markdown(
+    """
+    <style>
+      /* ボタンをTeal色に */
+      .stButton>button {
+        background-color: #008080 !important;
+        color: white !important;
+      }
+      /* infoボックスの背景色 */
+      .stInfo, .stInfo p {
+        background-color: #e0f2f1 !important;
+      }
+      /* サブヘッダーの文字色 */
+      .stSubheader {
+        color: #004d40 !important;
+      }
+      /* フィードバックフォームの背景 */
+      .stForm {
+        background-color: #e0f2f1 !important;
+      }
+      /* サイドバー（ナビゲーション）の背景を薄いTealグレーに */
+      [data-testid="stSidebar"] {
+        background-color: #e0f2f1 !important;
+      }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 from database import save_to_db, get_chat_history, get_db_count, clear_db
 from llm import generate_response
 from data import create_sample_evaluation_data
