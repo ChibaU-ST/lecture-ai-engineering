@@ -6,7 +6,6 @@ import streamlit as st
 import time
 from config import MODEL_NAME
 from huggingface_hub import login
-from data import get_all_correct_answers
 
 # バッチキューサポート
 from threading import Lock
@@ -90,17 +89,12 @@ def load_model():
 
 def generate_response(pipe, user_question):
     """LLMを使用して質問に対する回答を生成する"""
-    # モデルへの前処理コンテキストとして correct_answer を読み込む
-    correct_answers = get_all_correct_answers()
-    context_message = "以下は過去の正解例です：\n" + "\n".join(f"- {ans}" for ans in correct_answers)
-
     if pipe is None:
         return "モデルがロードされていないため、回答を生成できません。", 0
 
     try:
         start_time = time.time()
         messages = [
-            {"role": "system", "content": context_message},
             {"role": "user", "content": user_question},
         ]
         # max_new_tokensを調整可能にする（例）

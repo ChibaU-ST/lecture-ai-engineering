@@ -45,19 +45,3 @@ def ensure_initial_data():
     if get_db_count() == 0:
         st.info("データベースが空です。初期サンプルデータを投入します。")
         create_sample_evaluation_data()
-
-from database import get_all_evaluations
-
-def get_all_correct_answers():
-    """
-    データベースおよびサンプルデータからcorrect_answerを取得
-    """
-    # サンプルデータから取得
-    answers = [item["correct_answer"] for item in SAMPLE_QUESTIONS_DATA]
-    # データベースから取得
-    try:
-        records = get_all_evaluations()
-        answers += [r["correct_answer"] for r in records]
-    except Exception:
-        pass
-    return answers
