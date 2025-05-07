@@ -1,5 +1,10 @@
+# Disable Streamlit's file watcher to avoid asyncio and PyTorch class conflicts
+import os
+os.environ["STREAMLIT_SERVER_FILE_WATCHER_TYPE"] = "none"
 # ui.py
 import streamlit as st
+# Ensure Streamlit does not use the default watcher
+st.set_option("server.fileWatcherType", "none")
 import pandas as pd
 import time
 
